@@ -1,0 +1,230 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.9~svn20110310	//
+AFX_ZMODEMCOMM_H__6A43214C_9C2E_11D4_8639_F6B82A27C85A__INCLUDED_	ZModemComm.h	13;"	d
+AFX_ZMODEMCORE_H__6A43214A_9C2E_11D4_8639_F6B82A27C85A__INCLUDED_	ZModemCore.h	12;"	d
+AFX_ZMODEMFILE_H__6A43214D_9C2E_11D4_8639_F6B82A27C85A__INCLUDED_	ZModemFile.h	14;"	d
+ALLOK	ZModemCore.h	26;"	d
+Add	ZModemFileList.h	/^		void Add(char *filename) {$/;"	f	class:Filelist
+CANFC32	zmodemdef.h	51;"	d
+CANFDX	zmodemdef.h	52;"	d
+CANOVIO	zmodemdef.h	53;"	d
+CRC32	crc32.h	/^typedef DWORD CRC32;$/;"	t
+CRC32_INCLUDED	crc32.h	52;"	d
+CRCXM	crcxm.h	/^typedef unsigned int CRCXM;$/;"	t
+CRCXM_INCLUDED	crcxm.h	50;"	d
+CString	type.h	16;"	d
+CString	type.h	8;"	d
+CZModemComm	ZModemComm.cpp	/^CZModemComm::CZModemComm(HANDLE hcomm,HANDLE hCancelEvent)$/;"	f	class:CZModemComm
+CZModemComm	ZModemComm.h	/^class CZModemComm  $/;"	c
+CZModemCore	ZModemCore.cpp	/^CZModemCore::CZModemCore(HWND howner,HANDLE hcomm,HANDLE hcancelevent)$/;"	f	class:CZModemCore
+CZModemCore	ZModemCore.h	/^class CZModemCore$/;"	c
+CZModemFile	ZModemFile.cpp	/^CZModemFile::CZModemFile(HWND hOwner)$/;"	f	class:CZModemFile
+CZModemFile	ZModemFile.h	/^class CZModemFile  $/;"	c
+ClearInbound	ZModemComm.cpp	/^void CZModemComm::ClearInbound()$/;"	f	class:CZModemComm
+DWORD	type.h	5;"	d
+Filelist	ZModemFileList.h	/^		Filelist(){$/;"	f	class:Filelist
+Filelist	ZModemFileList.h	/^class Filelist $/;"	c
+Finish	ZModemFile.cpp	/^void CZModemFile::Finish()$/;"	f	class:CZModemFile
+GetAt	ZModemFileList.h	/^		char * GetAt(int i) {$/;"	f	class:Filelist
+GetBlock	ZModemComm.cpp	/^void CZModemComm::GetBlock(void *buffer,int max,int * actual)$/;"	f	class:CZModemComm
+GetBlockImm	ZModemComm.cpp	/^void CZModemComm::GetBlockImm(void *buffer,int max,int * actual)$/;"	f	class:CZModemComm
+GetData	ZModemFile.cpp	/^int CZModemFile::GetData(void *buffer,int max,int * bytes)$/;"	f	class:CZModemFile
+GetLastError	type.h	13;"	d
+GetReceivedFileName	ZModemFile.cpp	/^char * CZModemFile::GetReceivedFileName()$/;"	f	class:CZModemFile
+GetSize	ZModemFileList.h	/^		int GetSize() {$/;"	f	class:Filelist
+HANDLE	type.h	9;"	d
+HWND	type.h	7;"	d
+InitFromFILEINFO	ZModemFile.cpp	/^bool CZModemFile::InitFromFILEINFO(char *buffer)$/;"	f	class:CZModemFile
+LONG	type.h	6;"	d
+LPDWORD	type.h	10;"	d
+LPOVERLAPPED	type.h	11;"	d
+MakeFileInfo	ZModemFile.cpp	/^int CZModemFile::MakeFileInfo(unsigned char* buf)$/;"	f	class:CZModemFile
+NO_ERROR	type.h	12;"	d
+Open	ZModemFile.cpp	/^bool CZModemFile::Open(CString filename,bool create)$/;"	f	class:CZModemFile
+OpenReceivingFile	ZModemFile.cpp	/^void CZModemFile::OpenReceivingFile(uint64_t * offset,bool* skip)$/;"	f	class:CZModemFile
+ReadBuffer	ZModemComm.cpp	/^DWORD CZModemComm::ReadBuffer(void *buffer, DWORD num)$/;"	f	class:CZModemComm
+Receive	ZModemCore.cpp	/^bool CZModemCore::Receive(Filelist* filelist,char * receivedir)$/;"	f	class:CZModemCore
+ResetAll	ZModemComm.cpp	/^void CZModemComm::ResetAll()$/;"	f	class:CZModemComm
+ResetAll	ZModemCore.cpp	/^void CZModemCore::ResetAll()$/;"	f	class:CZModemCore
+ResetAll	ZModemFile.cpp	/^void CZModemFile::ResetAll()$/;"	f	class:CZModemFile
+SM_ACTIONRPOS	ZModemCore.h	33;"	d
+SM_SENDDATA	ZModemCore.h	32;"	d
+SM_SENDZDATA	ZModemCore.h	30;"	d
+SM_SENDZEOF	ZModemCore.h	31;"	d
+SM_WAITZRINIT	ZModemCore.h	34;"	d
+Send	ZModemCore.cpp	/^bool CZModemCore::Send(Filelist* filelist)$/;"	f	class:CZModemCore
+SetLastError	type.h	14;"	d
+SetPos	ZModemFile.cpp	/^void CZModemFile::SetPos(int offset)$/;"	f	class:CZModemFile
+SetReceivingDir	ZModemFile.cpp	/^void CZModemFile::SetReceivingDir(CString szDir)$/;"	f	class:CZModemFile
+THIS_FILE	ZModemComm.cpp	/^static char THIS_FILE[]=__FILE__;$/;"	v	file:
+THIS_FILE	ZModemComm.cpp	17;"	d	file:
+THIS_FILE	ZModemCore.cpp	/^static char THIS_FILE[]=__FILE__;$/;"	v	file:
+THIS_FILE	ZModemCore.cpp	21;"	d	file:
+THIS_FILE	ZModemFile.cpp	/^static char THIS_FILE[]=__FILE__;$/;"	v	file:
+THIS_FILE	ZModemFile.cpp	25;"	d	file:
+TRACE	type.h	15;"	d
+WM_USER_ZMODEMERROR	ZModemCore.h	58;"	d
+WM_USER_ZMODEMNEXTFILE	ZModemCore.h	60;"	d
+WM_USER_ZMODEMNEXTFILESIZE	ZModemCore.h	61;"	d
+WM_USER_ZMODEMPROGRESS	ZModemCore.h	59;"	d
+WM_USER_ZMODEMRPOS	ZModemCore.h	57;"	d
+WM_USER_ZMODEMTOTALFILES	ZModemCore.h	55;"	d
+WM_USER_ZMODEMTOTALSIZE	ZModemCore.h	56;"	d
+WriteBlock	ZModemComm.cpp	/^int CZModemComm::WriteBlock(void* buf,int max)$/;"	f	class:CZModemComm
+WriteBuffer	ZModemComm.cpp	/^DWORD CZModemComm::WriteBuffer(void *buffer, DWORD num)$/;"	f	class:CZModemComm
+WriteData	ZModemFile.cpp	/^void CZModemFile::WriteData(void* buffer,int bytes)$/;"	f	class:CZModemFile
+ZABORT	zmodemdef.h	28;"	d
+ZACK	zmodemdef.h	24;"	d
+ZBIN	zmodemdef.h	16;"	d
+ZBIN32	zmodemdef.h	18;"	d
+ZCAN	zmodemdef.h	37;"	d
+ZCBIN	zmodemdef.h	58;"	d
+ZCHALLENGE	zmodemdef.h	35;"	d
+ZCNL	zmodemdef.h	57;"	d
+ZCOMMAND	zmodemdef.h	39;"	d
+ZCOMPL	zmodemdef.h	36;"	d
+ZCRC	zmodemdef.h	34;"	d
+ZCRCE	zmodemdef.h	43;"	d
+ZCRCG	zmodemdef.h	44;"	d
+ZCRCQ	zmodemdef.h	45;"	d
+ZCRCW	zmodemdef.h	46;"	d
+ZDATA	zmodemdef.h	31;"	d
+ZDLE	zmodemdef.h	56;"	d
+ZEOF	zmodemdef.h	32;"	d
+ZFERR	zmodemdef.h	33;"	d
+ZFILE	zmodemdef.h	25;"	d
+ZFIN	zmodemdef.h	29;"	d
+ZFREECNT	zmodemdef.h	38;"	d
+ZHEX	zmodemdef.h	17;"	d
+ZMCORE_MAXBUF	ZModemCore.h	37;"	d
+ZMCORE_MAXTX	ZModemCore.h	38;"	d
+ZMODEM	zmodemexpimp.h	10;"	d
+ZMODEM	zmodemexpimp.h	5;"	d
+ZMODEM	zmodemexpimp.h	8;"	d
+ZMODEMFILE_ERROR	ZModemFile.h	22;"	d
+ZMODEMFILE_NOMOREDATA	ZModemFile.h	21;"	d
+ZMODEMFILE_OK	ZModemFile.h	20;"	d
+ZMODEM_ABORTFROMOUTSIDE	ZModemCore.h	51;"	d
+ZMODEM_BADHEX	ZModemCore.h	48;"	d
+ZMODEM_CRC32	ZModemCore.h	46;"	d
+ZMODEM_CRCXM	ZModemCore.h	44;"	d
+ZMODEM_ERROR_FILE	ZModemCore.h	52;"	d
+ZMODEM_FILEDATA	ZModemCore.h	47;"	d
+ZMODEM_GOTZCAN	ZModemCore.h	50;"	d
+ZMODEM_INIT	ZModemCore.h	41;"	d
+ZMODEM_LONGSP	ZModemCore.h	45;"	d
+ZMODEM_POS	ZModemCore.h	42;"	d
+ZMODEM_TIMEOUT	ZModemCore.h	49;"	d
+ZMODEM_ZDATA	ZModemCore.h	43;"	d
+ZNAK	zmodemdef.h	27;"	d
+ZPAD	zmodemdef.h	15;"	d
+ZRINIT	zmodemdef.h	22;"	d
+ZRPOS	zmodemdef.h	30;"	d
+ZRQINIT	zmodemdef.h	21;"	d
+ZRQRINIT_STR	zmodemdef.h	60;"	d
+ZRUB0	zmodemdef.h	47;"	d
+ZRUB1	zmodemdef.h	48;"	d
+ZSINIT	zmodemdef.h	23;"	d
+ZSKIP	zmodemdef.h	26;"	d
+ZSTDERR	zmodemdef.h	40;"	d
+_ZMODEMDEF_H_	zmodemdef.h	12;"	d
+_ZMODEMEXPIMP_H_	zmodemexpimp.h	3;"	d
+bcanfdx	ZModemCore.h	/^	bool bcrc32,bcanfdx;$/;"	m	class:CZModemCore
+bcrc32	ZModemCore.h	/^	bool bcrc32,bcanfdx;$/;"	m	class:CZModemCore
+bufPos	ZModemCore.h	/^	char* bufPos;$/;"	m	class:CZModemCore
+bufTop	ZModemCore.h	/^	char* bufTop;$/;"	m	class:CZModemCore
+bytes	ZModemCore.h	/^	int bytes;$/;"	m	class:CZModemCore
+ch	ZModemCore.h	/^	int ch;$/;"	m	class:CZModemCore
+count	ZModemFileList.h	/^		int count;$/;"	m	class:Filelist
+crc32Byte1	crc32.h	132;"	d
+crc32Byte2	crc32.h	134;"	d
+crc32Byte3	crc32.h	136;"	d
+crc32Byte4	crc32.h	138;"	d
+crc32Init	crc32.h	122;"	d
+crc32Update	crc32.h	124;"	d
+crc32Value	crc32.h	128;"	d
+crc32_tab	crc32.h	/^static DWORD crc32_tab[256] = {$/;"	v
+crcxmHighbyte	crcxm.h	99;"	d
+crcxmInit	crcxm.h	87;"	d
+crcxmLowbyte	crcxm.h	97;"	d
+crcxmUpdate	crcxm.h	89;"	d
+crcxmValue	crcxm.h	93;"	d
+crcxm_tab	crcxm.h	/^static unsigned int crcxm_tab[256] = {$/;"	v
+files	ZModemFileList.h	/^		char * files[500];$/;"	m	class:Filelist
+frameType	ZModemCore.h	/^	unsigned char frameType;$/;"	m	class:CZModemCore
+getBin32Header	ZModemCore.cpp	/^void CZModemCore::getBin32Header()$/;"	f	class:CZModemCore
+getBinaryHeader	ZModemCore.cpp	/^void CZModemCore::getBinaryHeader()$/;"	f	class:CZModemCore
+getData	ZModemCore.cpp	/^void CZModemCore::getData()$/;"	f	class:CZModemCore
+getData16	ZModemCore.cpp	/^void CZModemCore::getData16()$/;"	f	class:CZModemCore
+getData32	ZModemCore.cpp	/^void CZModemCore::getData32()$/;"	f	class:CZModemCore
+getFILEINFO	ZModemCore.cpp	/^void CZModemCore::getFILEINFO()$/;"	f	class:CZModemCore
+getHexHeader	ZModemCore.cpp	/^void CZModemCore::getHexHeader()$/;"	f	class:CZModemCore
+getNextCh	ZModemCore.cpp	/^void CZModemCore::getNextCh()$/;"	f	class:CZModemCore
+getNextDLECh	ZModemCore.cpp	/^void CZModemCore::getNextDLECh()$/;"	f	class:CZModemCore
+getNextHexCh	ZModemCore.cpp	/^void CZModemCore::getNextHexCh()$/;"	f	class:CZModemCore
+getOO	ZModemCore.cpp	/^void CZModemCore::getOO()		$/;"	f	class:CZModemCore
+getZMHeader	ZModemCore.cpp	/^void CZModemCore::getZMHeader()$/;"	f	class:CZModemCore
+getZMHeaderImmediate	ZModemCore.cpp	/^void CZModemCore::getZMHeaderImmediate()$/;"	f	class:CZModemCore
+goodOffset	ZModemCore.h	/^	uint64_t goodOffset;$/;"	m	class:CZModemCore
+gotHeader	ZModemCore.h	/^	int gotHeader;$/;"	m	class:CZModemCore
+gotSpecial	ZModemCore.h	/^	int gotSpecial;$/;"	m	class:CZModemCore
+headerData	ZModemCore.h	/^	int headerData[4];$/;"	m	class:CZModemCore
+headerType	ZModemCore.h	/^	unsigned char headerType;$/;"	m	class:CZModemCore
+m_Filelist	ZModemCore.h	/^	Filelist* m_Filelist;$/;"	m	class:CZModemCore
+m_Filename	ZModemFile.h	/^	char m_Filename[1024];$/;"	m	class:CZModemFile
+m_Filesize	ZModemFile.h	/^	LONG m_Filesize;$/;"	m	class:CZModemFile
+m_ReceiveDir	ZModemFile.h	/^	char m_ReceiveDir[1024];$/;"	m	class:CZModemFile
+m_ZModemComm	ZModemCore.h	/^	CZModemComm* m_ZModemComm;$/;"	m	class:CZModemCore
+m_ZModemFile	ZModemCore.h	/^	CZModemFile* m_ZModemFile;$/;"	m	class:CZModemCore
+m_bWait	ZModemCore.h	/^	bool m_bWait;$/;"	m	class:CZModemCore
+m_fd	ZModemFile.h	/^	int m_fd;$/;"	m	class:CZModemFile
+m_fileinfo	ZModemFile.h	/^	char m_fileinfo[1024];$/;"	m	class:CZModemFile
+m_hCancelEvent	ZModemComm.h	/^	HANDLE m_hCancelEvent;$/;"	m	class:CZModemComm
+m_hCancelEvent	ZModemCore.h	/^	HANDLE m_hCancelEvent;$/;"	m	class:CZModemCore
+m_hOwner	ZModemCore.h	/^	HWND m_hOwner;$/;"	m	class:CZModemCore
+m_hOwner	ZModemFile.h	/^	HWND m_hOwner;$/;"	m	class:CZModemFile
+m_hcomm	ZModemComm.h	/^	HANDLE m_hcomm;$/;"	m	class:CZModemComm
+m_hcomm	ZModemCore.h	/^	HANDLE m_hcomm;$/;"	m	class:CZModemCore
+mainBuf	ZModemCore.h	/^	char mainBuf[1024];$/;"	m	class:CZModemCore
+maxTx	ZModemCore.h	/^	int maxTx;$/;"	m	class:CZModemCore
+moreData	ZModemCore.h	/^	int moreData;$/;"	m	class:CZModemCore
+needsDLE	ZModemCore.h	27;"	d
+new	ZModemComm.cpp	19;"	d	file:
+new	ZModemCore.cpp	23;"	d	file:
+new	ZModemFile.cpp	27;"	d	file:
+posMatch	ZModemCore.cpp	/^bool CZModemCore::posMatch()$/;"	f	class:CZModemCore
+receiveData	ZModemCore.cpp	/^void CZModemCore::receiveData()$/;"	f	class:CZModemCore
+receiveFile	ZModemCore.cpp	/^void CZModemCore::receiveFile()$/;"	f	class:CZModemCore
+sendBin32Header	ZModemCore.cpp	/^void CZModemCore::sendBin32Header()$/;"	f	class:CZModemCore
+sendBinHeader	ZModemCore.cpp	/^void CZModemCore::sendBinHeader()$/;"	f	class:CZModemCore
+sendChar	ZModemCore.cpp	/^void CZModemCore::sendChar()$/;"	f	class:CZModemCore
+sendChar	ZModemCore.cpp	/^void CZModemCore::sendChar(int c)$/;"	f	class:CZModemCore
+sendDLEChar	ZModemCore.cpp	/^void CZModemCore::sendDLEChar()$/;"	f	class:CZModemCore
+sendData	ZModemCore.cpp	/^void CZModemCore::sendData()$/;"	f	class:CZModemCore
+sendData16	ZModemCore.cpp	/^void CZModemCore::sendData16(int len,char frameend)$/;"	f	class:CZModemCore
+sendData32	ZModemCore.cpp	/^void CZModemCore::sendData32(int len,char frameend)$/;"	f	class:CZModemCore
+sendFILEINFO	ZModemCore.cpp	/^void CZModemCore::sendFILEINFO()$/;"	f	class:CZModemCore
+sendFile	ZModemCore.cpp	/^bool CZModemCore::sendFile()$/;"	f	class:CZModemCore
+sendFiles	ZModemCore.cpp	/^bool CZModemCore::sendFiles()$/;"	f	class:CZModemCore
+sendHeader	ZModemCore.cpp	/^void CZModemCore::sendHeader()$/;"	f	class:CZModemCore
+sendHexChar	ZModemCore.cpp	/^void CZModemCore::sendHexChar()$/;"	f	class:CZModemCore
+sendHexHeader	ZModemCore.cpp	/^void CZModemCore::sendHexHeader()$/;"	f	class:CZModemCore
+sendOO	ZModemCore.cpp	/^void CZModemCore::sendOO()$/;"	f	class:CZModemCore
+sendZACK	ZModemCore.cpp	/^void CZModemCore::sendZACK()$/;"	f	class:CZModemCore
+sendZDATA	ZModemCore.cpp	/^void CZModemCore::sendZDATA()$/;"	f	class:CZModemCore
+sendZEOF	ZModemCore.cpp	/^void CZModemCore::sendZEOF()$/;"	f	class:CZModemCore
+sendZFILE	ZModemCore.cpp	/^void CZModemCore::sendZFILE()$/;"	f	class:CZModemCore
+sendZFIN	ZModemCore.cpp	/^void CZModemCore::sendZFIN()$/;"	f	class:CZModemCore
+sendZRINIT	ZModemCore.cpp	/^void CZModemCore::sendZRINIT()$/;"	f	class:CZModemCore
+sendZRPOS	ZModemCore.cpp	/^void CZModemCore::sendZRPOS()$/;"	f	class:CZModemCore
+sendZRQINIT	ZModemCore.cpp	/^void CZModemCore::sendZRQINIT()$/;"	f	class:CZModemCore
+sendZSKIP	ZModemCore.cpp	/^void CZModemCore::sendZSKIP()$/;"	f	class:CZModemCore
+sendrz	ZModemCore.cpp	/^void CZModemCore::sendrz()$/;"	f	class:CZModemCore
+skip	ZModemCore.h	/^	bool skip;$/;"	m	class:CZModemCore
+~CZModemComm	ZModemComm.cpp	/^CZModemComm::~CZModemComm()$/;"	f	class:CZModemComm
+~CZModemCore	ZModemCore.cpp	/^CZModemCore::~CZModemCore()$/;"	f	class:CZModemCore
+~CZModemFile	ZModemFile.cpp	/^CZModemFile::~CZModemFile()$/;"	f	class:CZModemFile
