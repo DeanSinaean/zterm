@@ -4,12 +4,12 @@ zterm is a serial port terminal with zmodem
 Make
 ====
 
-    make 
+    cd zmodem; make 
 	go build main.go
 
 Usage
 ====
 
-    sudo LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/dean/Downloads/zmodemclass  ./main 
+    sudo LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$(pwd)/zmodem  ./main 
 
 
