@@ -83,10 +83,10 @@ int CZModemFile::GetData(void *buffer,int max,int * bytes)
 	}
 
 	if(max != *bytes) {
-		TRACE("try to read %u bytes ",max);
-		TRACE("only %u bytes read",*bytes);    
+		TRACE("try to read %u bytes \n",max);
+		TRACE("only %u bytes read\n",*bytes);    
 	} else {
-		TRACE("%u bytes read",*bytes);
+		TRACE("%u bytes read\n",*bytes);
 	}
 	return(rw);
 }
@@ -134,7 +134,7 @@ void CZModemFile::OpenReceivingFile(uint64_t * offset,bool* skip)
 		TRACE("error open file %s\n",m_Filename);
 		TRACE("error CreateFile %u\n",GetLastError());
 	} else {
-		TRACE("file opened: %s",m_Filename);
+		TRACE("file opened: %s\n",m_Filename);
 	}
 	*offset = 0;
 	*skip = 0;
@@ -152,8 +152,8 @@ void CZModemFile::OpenReceivingFile(uint64_t * offset,bool* skip)
 			{
          		case 0://size
 					m_Filesize = atol(item);
-					TRACE("filesize %u Bytes",m_Filesize);
-					TRACE("filename: %s ",m_Filename);
+					TRACE("filesize %u Bytes\n",m_Filesize);
+					TRACE("filename: %s \n",m_Filename);
 					
                break;
             case 1://	Modification date (ocatl number)
@@ -189,18 +189,23 @@ int CZModemFile::MakeFileInfo(unsigned char* buf)
 	int len = strlen(m_Filename);
 	int i=0;
 	for(i=len-1;i>=0;i--) {
-		if(m_Filename[i]=='\\') {
+		if(m_Filename[i]=='/') {
 			break;
 		}
 	}
+	printf("i===%d\n",i);
 	if (i<0) {
 		i=0;
+	}
+	if(m_Filename[i]=='/') {
+		i++;
 	}
 	strcpy((char *)buf, &m_Filename[i]);
 	cnt = strlen((char*)buf) + 1;
 
 	sprintf((char*)buf + cnt, "%d", m_Filesize);
 	cnt = cnt + strlen((char*)buf + cnt) + 1;
+	printf("cnt is %d\n",cnt);
 
 	return cnt;
 }
@@ -209,9 +214,8 @@ int CZModemFile::MakeFileInfo(unsigned char* buf)
 bool CZModemFile::InitFromFILEINFO(char *buffer)
 //-----------------------------------------------------------------------------
 {
-	char filename[1024];
-	memset(filename,0,1024);
-	strcpy(filename,buffer);//copy upto first \0
+	memset(m_Filename,0,1024);
+	strcpy(m_Filename,buffer);//copy upto first \0
 	//get next block
 	char* pos=(char*)memchr(buffer,'\0',(sizeof buffer)-1);
 	if(pos!=NULL)
@@ -229,8 +233,8 @@ void CZModemFile::SetReceivingDir(CString szDir)
 //-----------------------------------------------------------------------------
 {
 	strcpy(m_ReceiveDir , szDir);
-	if(m_ReceiveDir[strlen(m_ReceiveDir)-1]!='\\') {
-		strcat(m_ReceiveDir, "\\");
+	if(m_ReceiveDir[strlen(m_ReceiveDir)-1]!='/') {
+		strcat(m_ReceiveDir, "/");
 	}
 }
 

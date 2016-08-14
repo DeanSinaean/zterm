@@ -1,3 +1,6 @@
+#ifndef FILELIST
+#define FILELIST
+
 #include <string.h>
 class Filelist 
 {
@@ -24,3 +27,4 @@ class Filelist
 		char * files[500];
 
 };
+#endif

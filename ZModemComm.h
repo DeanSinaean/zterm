@@ -22,7 +22,7 @@ class CZModemComm
 {
 public:
 	void ResetAll();
-	CZModemComm(void * hcomm,void * hCancelEvent);
+	CZModemComm(int ufd,void * hCancelEvent);
 	void GetBlock(void *buffer,int max,int * actual);
 	void GetBlockImm(void *buffer,int max,int * actual);
 	int WriteBlock(const void* buf,int max);
@@ -36,8 +36,8 @@ protected:
 	bool HandleReadEvent(LPOVERLAPPED lpOverlappedRead,void* lpszInputBuffer,
                            DWORD dwSizeofBuffer,LPDWORD lpnNumberOfBytesRead);
 
-	HANDLE m_hcomm;
 	HANDLE m_hCancelEvent;
+	int m_ufd;
 };
 
 #endif // !defined(AFX_ZMODEMCOMM_H__6A43214C_9C2E_11D4_8639_F6B82A27C85A__INCLUDED_)

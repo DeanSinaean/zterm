@@ -16,6 +16,7 @@
 #include "ZModemCore.h"
 #include "type.h"
 #include <unistd.h>
+#include <signal.h>
 
 #ifdef _DEBUG
 #undef THIS_FILE
@@ -28,13 +29,13 @@ static char THIS_FILE[]=__FILE__;
 // params:	howner			->	handle of the Owner Window
 //			hcomm			->	handle of the modem ressource, got from TAPI
 //			hcancelevent	->  handle of an event signaling user-break
-CZModemCore::CZModemCore(HWND howner,HANDLE hcomm,HANDLE hcancelevent)
+CZModemCore::CZModemCore(HWND howner,int ufd,HANDLE hcancelevent)
 	//-----------------------------------------------------------------------------
 {
 	m_hOwner = howner;
-	m_hcomm = hcomm;
+	m_ufd = ufd;
 	m_hCancelEvent = hcancelevent;
-	m_ZModemComm = new CZModemComm(m_hcomm,m_hCancelEvent);
+	m_ZModemComm = new CZModemComm(ufd,m_hCancelEvent);
 	m_ZModemFile = new CZModemFile(howner);
 	maxTx = ZMCORE_MAXTX;
 }
@@ -59,10 +60,14 @@ bool CZModemCore::Send(Filelist* filelist)
 	int tries=0;
 	// 
 	this->ResetAll();
-	if(filelist == NULL)
+	if(filelist == NULL) {
+		printf("filelist is NULL\n");
 		return false;
-	if(filelist->GetSize() == 0)
+	}
+	if(filelist->GetSize() == 0) {
+		printf("filelist size 0 \n");
 		return false;
+	}
 	m_Filelist = filelist;
 	bufTop = mainBuf + (sizeof mainBuf);
 	m_ZModemComm->ClearInbound();//clear all pending data from modem
@@ -80,7 +85,7 @@ bool CZModemCore::Send(Filelist* filelist)
 					{
 						TRACE("set error %s\n","ZMODEM_GOTZCAN");
 						SetLastError(ZMODEM_GOTZCAN);
-//						::PostMessage(m_hOwner,WM_USER_ZMODEMERROR,(WPARAM)ZMODEM_GOTZCAN,0L);
+						//						::PostMessage(m_hOwner,WM_USER_ZMODEMERROR,(WPARAM)ZMODEM_GOTZCAN,0L);
 						quit=true;
 						fin=true;
 						break;
@@ -119,7 +124,7 @@ bool CZModemCore::Send(Filelist* filelist)
 			if((err==ZMODEM_TIMEOUT) || (err==ZMODEM_CRCXM) ||
 					(err==ZMODEM_CRC32) || (err==ZMODEM_BADHEX))
 			{
-//				::PostMessage(m_hOwner,WM_USER_ZMODEMERROR,(WPARAM)err,0L);
+				//				::PostMessage(m_hOwner,WM_USER_ZMODEMERROR,(WPARAM)err,0L);
 				if(tries < 100)
 				{
 					SetLastError(0);
@@ -167,10 +172,10 @@ bool CZModemCore::Receive(Filelist* filelist,char * receivedir)
 	int tries;
 	// 
 	this->ResetAll();
-	if(filelist == NULL)
+	if(filelist == NULL) {
+		printf("filelist is NULL\n");
 		return false;
-	if(filelist->GetSize() == 0)
-		return false;
+	}
 	m_Filelist = filelist;
 	if(receivedir)
 		m_ZModemFile->SetReceivingDir(receivedir);
@@ -180,36 +185,41 @@ bool CZModemCore::Receive(Filelist* filelist,char * receivedir)
 	fin = false;
 	while(ALLOK && !fin)
 	{
-		sendZRINIT();
+		sendZRINIT();//start receiving a file
 		quit = false;
 		tries = 0;
-		while(ALLOK && !quit)
-		{
+		while(ALLOK && !quit) {//the procedure for receiving one file
 			getZMHeader();
-			if(ALLOK)
-			{
-				if(headerType == ZFIN)//other side has finish signaled
-				{
+			if(!ALLOK) {//error handling
+				DWORD err=GetLastError();
+				if((err==ZMODEM_TIMEOUT) || (err==ZMODEM_CRCXM) || (err==ZMODEM_CRC32) || (err==ZMODEM_BADHEX)) {
+					if(tries < 100) {
+						SetLastError(0);
+						sendZRINIT();
+						tries++;
+					}else {
+						printf("error geting a header. exiting\n");
+						return (-1);
+					}
+				}
+			}
+			switch(headerType) {
+				case ZFIN:
 					sendZFIN();//reply
 					getOO();//try to get over and out signal
 					quit = true;
 					fin = true;
-				}
-				else if(headerType == ZRQINIT)
-				{
-					if(tries < 100)
-					{
+					break;
+				case ZRQINIT:
+					if(tries < 100) {
 						sendZRINIT();
 						tries++;
-					}
-					else
-					{
+					} else {
 						TRACE("set error %s\n","ZMODEM_INIT");
 						SetLastError(ZMODEM_INIT);
 					}
-				}
-				else if(headerType == ZFILE)//file transfer signaled
-				{
+					break;
+				case ZFILE:
 					skip = false;
 					getFILEINFO();//extract the FILEINFO from data block
 					if(ALLOK)
@@ -218,37 +228,21 @@ bool CZModemCore::Receive(Filelist* filelist,char * receivedir)
 						if(ALLOK)
 							m_Filelist->Add(m_ZModemFile->GetReceivedFileName());
 						quit = true;
-					}
-					else if(GetLastError()==ZMODEM_CRC32)
-					{
-//						::PostMessage(m_hOwner,WM_USER_ZMODEMERROR,(WPARAM)ZMODEM_CRC32,0L);
-						if(tries < 100)
-						{
+					} else if(GetLastError()==ZMODEM_CRC32) {
+						//						::PostMessage(m_hOwner,WM_USER_ZMODEMERROR,(WPARAM)ZMODEM_CRC32,0L);
+						if(tries < 100) {
 							SetLastError(0);
 							sendZRINIT();
 							tries++;
 						}
 					}
-				}
-			}
-			else
-			{
-				DWORD err=GetLastError();
-				if((err==ZMODEM_TIMEOUT) || (err==ZMODEM_CRCXM) ||
-						(err==ZMODEM_CRC32) || (err==ZMODEM_BADHEX))
-				{
-//					::PostMessage(m_hOwner,WM_USER_ZMODEMERROR,(WPARAM)err,0L);
-					if(tries < 100)
-					{
-						SetLastError(0);
-						sendZRINIT();
-						tries++;
-					}
-				}
+					break;
+				default:
+					printf("invalid headerType, exiting\n");
+					return (-1);
 			}
 		}
 	}
-	sleep(4);//wait 4 seconds tu ensure that the other side really get our ZEOF 
 	return(ALLOK);
 }
 
@@ -295,61 +289,52 @@ bool CZModemCore::sendFiles()
 	{
 		gotfile = m_ZModemFile->Open(m_Filelist->GetAt(i), false);
 		if(gotfile)
-			TRACE("SendFiles filename %s",m_Filelist->GetAt(i));
+			printf("Sending file:%s\n",m_Filelist->GetAt(i));
 		else
 			break;
 		goodOffset = 0;
 		tries = 0;
 		sent = false;
-		while(ALLOK && (tries < 10) && !sent)
-		{
-			if(!fileinfosent)
-			{
+		while(ALLOK && (tries < 10) && !sent) {//send one file
+			if(!fileinfosent) {//send ZFILE
 				sendZFILE();
 				sendFILEINFO();
 				fileinfosent=true;
-			}	
-			getZMHeader();
-			if(ALLOK)
-			{
-				if(headerType == ZRINIT)
-				{
-					TRACE("got ZRINIT");
-					tries++;
-				}
-				else if (headerType == ZRPOS)
-				{
-					TRACE("got ZRPOS");
-					offset=(headerData[3] << 24) | (headerData[2] << 16) |
-						(headerData[1] << 8)  | headerData[0];
-					m_ZModemFile->SetPos(offset);
-					goodOffset = offset;
-					rw=sendFile();
-					sent = true;
-				}
-				else if(headerType == ZNAK)//nochmal senden
-				{
-					TRACE("got ZNAK");
-					fileinfosent=false;
-				}
-				else if(headerType == ZSKIP)//bitte nächstes file
-				{
-					TRACE("got ZSKIP");
-					sent=true;
-				}
-				else if(headerType== ZCRC)
-				{
-					TRACE("got ZCRC, no action");
-				}
 			}
-			else
-			{
+			getZMHeader();
+			if(!ALLOK) { 
 				DWORD err=GetLastError();
 				if(err==ZMODEM_TIMEOUT)
 				{
 					SetLastError(0);
 				}
 				tries++;
+			}
+			switch (headerType) {
+				case ZRINIT:
+					TRACE("got ZRINIT\n");
+					tries++;
+					break;
+				case ZRPOS:
+					offset=(headerData[3] << 24) | (headerData[2] << 16) |
+						(headerData[1] << 8)  | headerData[0];
+					m_ZModemFile->SetPos(offset);
+					goodOffset = offset;
+					TRACE("got ZRPOS, new pos is %d\n", offset);
+					rw=sendFile();
+					sent = true;
+					break;
+				case ZNAK:
+					TRACE("got ZNAK\n");
+					fileinfosent=false;
+					break;
+				case ZSKIP:
+					TRACE("got ZSKIP\n");
+					sent=true;
+					break;
+				case ZCRC:
+				default:
+					break;
 			}
 		}
 		m_ZModemFile->Finish();
@@ -370,55 +355,48 @@ bool CZModemCore::sendFile()
 	bool rw=true;
 	// 
 	state = SM_SENDZDATA;
-	while(ALLOK && !sentfile)
-	{
-		switch(state)
-		{
+	while(ALLOK && !sentfile) {
+		switch(state) {
 			case SM_SENDZDATA:
 				{
 					moreData = 1;
 					int erg=m_ZModemFile->GetData(mainBuf,maxTx,&bytes);
-					if(erg==ZMODEMFILE_NOMOREDATA)
-					{
+					if(erg==ZMODEMFILE_NOMOREDATA) {
 						state = SM_SENDZEOF;
 						moreData = 0;
-					}
-					else if(erg == ZMODEMFILE_OK)
-					{
+					} else if(erg == ZMODEMFILE_OK) {
 						sendZDATA();
 						state = SM_SENDDATA;
-					}
-					else//ZMODEMFILE_ERROR
-					{
+					} else {
 						TRACE("set error ZMODEM_ERROR_FILE");
 						SetLastError(ZMODEM_ERROR_FILE);
 					}
 					break;
 				}
 			case SM_SENDDATA:
-				while (ALLOK && (state == SM_SENDDATA))
-				{
+				while (ALLOK && (state == SM_SENDDATA)) {
 					sendData();
 					getZMHeaderImmediate();
 					DWORD err=GetLastError();
-					if(ALLOK && (headerType == ZRPOS))
-					{
+					if(ALLOK && (headerType == ZRPOS)) {
 						state = SM_ACTIONRPOS;
-					}
-					else
-					{
+					} else {
 						DWORD err=GetLastError();
 						if(err==ZMODEM_TIMEOUT)//got no header
 							SetLastError(0);
-						if(ALLOK)
-						{
-							if(!moreData)
-							{
+						if(ALLOK) {
+							if(!moreData) {
 								state = SM_SENDZEOF;
 								break;
+							} else {
+								int erg=m_ZModemFile->GetData(mainBuf,maxTx,&bytes);
+								if (erg == ZMODEMFILE_NOMOREDATA) {
+									moreData = 0;
+									state = SM_SENDZEOF;
+									break;
+								}
+//								usleep(200000);//wait 1 ms
 							}
-							else
-								m_ZModemFile->GetData(mainBuf,maxTx,&bytes);
 						}
 					}
 				}//while
@@ -427,9 +405,9 @@ bool CZModemCore::sendFile()
 				newpos=headerData[0] | (headerData[1] << 8) |
 					(headerData[2] << 16) | (headerData[3] << 24);
 				TRACE("in SM_ACTIONRPOS\n");
-#ifdef _DEBUG
+#ifdef DEBUG
 				char out[1000];
-				wsprintf(out,"newpos: %lu",newpos);
+				sprintf(out,"newpos: %lu\n",newpos);
 				TRACE(out);
 #endif
 				if(newpos <= lastpos)
@@ -437,8 +415,8 @@ bool CZModemCore::sendFile()
 				else
 					tries = 0;
 				m_ZModemFile->SetPos(newpos);
-//				::PostMessage(m_hOwner,WM_USER_ZMODEMERROR,ZMODEM_POS,0L);
-//				::PostMessage(m_hOwner,WM_USER_ZMODEMRPOS,newpos,0L);
+				//				::PostMessage(m_hOwner,WM_USER_ZMODEMERROR,ZMODEM_POS,0L);
+				//				::PostMessage(m_hOwner,WM_USER_ZMODEMRPOS,newpos,0L);
 				goodOffset = newpos;
 				state = SM_SENDZDATA;
 				break;
@@ -455,6 +433,7 @@ bool CZModemCore::sendFile()
 					sentfile = true;
 				else if (ALLOK && (headerType == ZRPOS))
 				{
+					TRACE("got ZRPOS\n");
 					state = SM_ACTIONRPOS;
 				}
 				//erweitert ...
@@ -483,54 +462,45 @@ bool CZModemCore::sendFile()
 
 //-----------------------------------------------------------------------------
 void CZModemCore::receiveFile()
-	//-----------------------------------------------------------------------------
-{	// 
+{	 
 	bool quit;
 	int tries;
-	// 
+
+#ifdef DEBUG
+	TRACE("%s\n",__func__);
+#endif
+
 	goodOffset = 0;
+
 	m_ZModemFile->OpenReceivingFile(&goodOffset,&skip);
-	if(skip)
+	if(skip) {
 		sendZSKIP();
-	else
-	{
+	} else {
 		sendZRPOS();
 		quit = false;
 		tries = 0;
-		while(ALLOK && !quit)
-		{
+		while(ALLOK && !quit) {
 			getZMHeader();
-			if(ALLOK)
-			{
-				if(headerType == ZFILE)
-				{
-					if(tries < 100)
-					{
+			if(ALLOK) {
+				if(headerType == ZFILE) {
+					if(tries < 100) {
 						sendZRPOS();
 						tries++;
-					}
-					else
-					{
+					} else {
 						TRACE("set error %s\n","ZMODEM_POS");
 						SetLastError(ZMODEM_POS);
-//						::PostMessage(m_hOwner,WM_USER_ZMODEMERROR,ZMODEM_POS,0L);
+						//						::PostMessage(m_hOwner,WM_USER_ZMODEMERROR,ZMODEM_POS,0L);
 					}
-				}
-				else if(headerType == ZDATA)
-				{
+				} else if(headerType == ZDATA) {
 					receiveData();
 					quit = true;
 				}
-			}
-			else
-			{
+			} else {
 				DWORD err=GetLastError();
 				if((err==ZMODEM_TIMEOUT) || (err==ZMODEM_CRCXM) ||
-						(err==ZMODEM_CRC32))
-				{
-//					PostMessage(m_hOwner,WM_USER_ZMODEMERROR,err,0L);
-					if(tries < 100)
-					{
+						(err==ZMODEM_CRC32)) {
+					//					PostMessage(m_hOwner,WM_USER_ZMODEMERROR,err,0L);
+					if(tries < 100) {
 						SetLastError(0);
 						sendZRPOS();
 						tries++;
@@ -543,39 +513,27 @@ void CZModemCore::receiveFile()
 
 //-----------------------------------------------------------------------------
 void CZModemCore::receiveData()
-	//-----------------------------------------------------------------------------
-{	// 
-	bool quit;
-	int tries;
-	// 
-	quit = false;
-	tries = 0;
+{	 
+	bool quit = false;
+	int tries = 0;
 	moreData = 1;
 	while(ALLOK && !quit)
 	{
-		if(moreData)
-		{
+		if(moreData) {
 			getData();
-			if(ALLOK)
-			{
+			if(ALLOK) {
 				m_ZModemFile->WriteData(mainBuf,(DWORD)(bufPos - mainBuf));
 				tries = 0;
 			}
-		}
-		else
-		{
+		} else {
 			getZMHeader();
-			if(ALLOK)
-			{
-				if(headerType == ZDATA)
-				{
+			if(ALLOK) {
+				if(headerType == ZDATA) {
 					if(posMatch())
 						moreData = 1;
 				}
-				else if (headerType == ZEOF)
-				{
-					if (posMatch())
-					{
+				else if (headerType == ZEOF) {
+					if (posMatch()) {
 						m_ZModemFile->Finish();
 						quit = true;
 					}
@@ -590,7 +548,7 @@ void CZModemCore::receiveData()
 			{
 				if(tries < 100)
 				{
-//					::PostMessage(m_hOwner,WM_USER_ZMODEMERROR,err,0L);
+					//					::PostMessage(m_hOwner,WM_USER_ZMODEMERROR,err,0L);
 					SetLastError(0);
 					moreData = 0;
 					sendZRPOS();
@@ -619,38 +577,30 @@ void CZModemCore::getZMHeader()
 	// 
 	gotHeader = 0;
 	getNextCh();
-	while(ALLOK && !gotHeader)
-	{
-		while (ALLOK && (ch != ZPAD))
-		{
+	while(ALLOK && !gotHeader) {
+
+		while (ALLOK && (ch != ZPAD)) {
 			getNextCh();
 		}
-		if(ALLOK)
-		{
+
+		if(ALLOK) {
 			count = 1;
 			getNextCh();
-			while (ALLOK && (ch == ZPAD))
-			{
+			while (ALLOK && (ch == ZPAD)) {
 				count++;
 				getNextCh();
 			}
-			if(ALLOK && (ch == ZDLE))
-			{
+
+			if(ALLOK && (ch == ZDLE)) {
 				getNextCh();
-				if(ALLOK)
-				{
-					if (ch == ZBIN)
-					{
+				if(ALLOK) {
+					if (ch == ZBIN) {
 						frameType = ZBIN;
 						getBinaryHeader();
-					}
-					else if (ch == ZBIN32)
-					{
+					} else if (ch == ZBIN32) {
 						frameType = ZBIN32;
 						getBin32Header();
-					}
-					else if ((ch == ZHEX) && (count >= 2))
-					{
+					} else if ((ch == ZHEX) && (count >= 2)) {
 						frameType = ZHEX;
 						getHexHeader();
 					}
@@ -660,11 +610,11 @@ void CZModemCore::getZMHeader()
 	}
 	if(gotHeader)
 	{
-#ifdef _DEBUG
+#ifdef DEBUG
 		char out[1000];
-		wsprintf(out,"headerdata 0: %u 1: %u 2: %u 3: %u",headerData[0],
+		sprintf(out,"headerdata 0: %u 1: %u 2: %u 3: %u",headerData[0],
 				headerData[1],headerData[2],headerData[3]);
-		TRACE(out);
+		TRACE("%s\n",out);
 #endif
 		;      
 	}
@@ -691,6 +641,9 @@ void CZModemCore::getFILEINFO()
 {	// 
 	bool noproblem;
 	// 
+#ifdef DEBUG
+	TRACE("%s\n",__func__);
+#endif
 	getData();
 	if(ALLOK)
 	{
@@ -707,6 +660,9 @@ void CZModemCore::getFILEINFO()
 void CZModemCore::sendZRINIT()
 	//-----------------------------------------------------------------------------
 {
+#ifdef DEBUG
+	TRACE("%s\n",__func__);
+#endif
 	frameType = ZHEX;
 	headerType = ZRINIT;
 	headerData[0] = 0x00;
@@ -720,6 +676,9 @@ void CZModemCore::sendZRINIT()
 void CZModemCore::sendZSKIP()
 	//-----------------------------------------------------------------------------
 {
+#ifdef DEBUG
+	TRACE("%s\n",__func__);
+#endif
 	frameType = ZHEX;
 	headerType = ZSKIP;
 	headerData[0] = 0x00;
@@ -735,6 +694,9 @@ void CZModemCore::sendZRPOS()
 {	// 
 	long templ;
 	// 
+#ifdef DEBUG
+	TRACE("%s\n",__func__);
+#endif
 	frameType = ZHEX;
 	headerType = ZRPOS;
 	templ = goodOffset;
@@ -753,6 +715,9 @@ void CZModemCore::sendZRPOS()
 void CZModemCore::sendZFIN()
 	//-----------------------------------------------------------------------------
 {
+#ifdef DEBUG
+	TRACE("%s\n",__func__);
+#endif
 	frameType = ZHEX;
 	headerType = ZFIN;
 	headerData[0] = 0x00;
@@ -766,6 +731,9 @@ void CZModemCore::sendZFIN()
 void CZModemCore::sendZEOF()
 	//-----------------------------------------------------------------------------
 {
+#ifdef DEBUG
+	TRACE("%s\n",__func__);
+#endif
 	frameType = ZHEX;
 	headerType = ZEOF;
 	headerData[0] = (unsigned char)(goodOffset);
@@ -903,11 +871,10 @@ void CZModemCore::sendZACK()
 void CZModemCore::sendHeader()
 	//-----------------------------------------------------------------------------
 {
-#ifdef _DEBUG
+#ifdef DEBUG
 	char out[1000];
-	wsprintf(out,"sending frametype: %u headertyp: %u, headerdata 0: %u 1: %u 2: %u 3: %u",
+	printf("sending frametype: %u headertyp: %u, headerdata 0: %u 1: %u 2: %u 3: %u\n",
 			frameType,headerType,headerData[0],headerData[1],headerData[2],headerData[3]);
-	TRACE(out);
 #endif
 	switch(frameType)
 	{
@@ -1276,7 +1243,7 @@ void CZModemCore::getData16()
 	if(bufPos == bufTop)
 	{
 		TRACE("set error %s\n","ZMODEM_LONGSP");
-//		::PostMessage(m_hOwner,WM_USER_ZMODEMERROR,(WPARAM)ZMODEM_LONGSP,0L);
+		//		::PostMessage(m_hOwner,WM_USER_ZMODEMERROR,(WPARAM)ZMODEM_LONGSP,0L);
 		SetLastError(ZMODEM_LONGSP);
 	}
 }
@@ -1285,58 +1252,45 @@ void CZModemCore::getData16()
 void CZModemCore::getData32()
 	//-----------------------------------------------------------------------------
 {	//variablen
-	int quit;
+	int quit = 0;
 	CRC32 crc;
 	DWORD theirCRC;
-	// 
+
 	bufPos = mainBuf;
-	quit = 0;
 	crc32Init(&crc);
-	while(ALLOK && (bufPos < bufTop) && !quit)
-	{
+	while(ALLOK && (bufPos < bufTop) && !quit) {
 		getNextDLECh();
-		if(ALLOK)
-		{
-			if(gotSpecial)
-			{
-				if(ch != ZCRCG)
-				{
+		if(ALLOK) {
+			if(gotSpecial) {
+				if(ch != ZCRCG) {
 					moreData = 0;
 				}
 				crc32Update(&crc, ch);
+
 				getNextDLECh();
-				if(ALLOK)
-				{
+				if(ALLOK) {
 					theirCRC = ch;
 					getNextDLECh();
 				}
-				if(ALLOK)
-				{
+				if(ALLOK) {
 					theirCRC = theirCRC | ((DWORD)ch << 8);
 					getNextDLECh();
 				}
-				if(ALLOK)
-				{
+				if(ALLOK) {
 					theirCRC = theirCRC | ((DWORD)ch << 16);
 					getNextDLECh();
 				}
-				if(ALLOK)
-				{
+				if(ALLOK) {
 					theirCRC = theirCRC | ((DWORD)ch << 24);
-					if (~crc32Value(&crc) != theirCRC)
-					{
+					if (~crc32Value(&crc) != theirCRC) {
 						TRACE("set error %s\n","ZMODEM_CRC32");
 						SetLastError(ZMODEM_CRC32);
-					}
-					else
-					{
+					} else {
 						goodOffset += (bufPos - mainBuf);
 						quit = 1;
 					}
 				}
-			}
-			else
-			{
+			} else {
 				crc32Update(&crc, ch);
 				*bufPos = (unsigned char)ch;
 				bufPos++;
@@ -1347,6 +1301,8 @@ void CZModemCore::getData32()
 	{
 		TRACE("set error %s\n","ZMODEM_LONGSP");
 		SetLastError(ZMODEM_LONGSP);
+		printf("%s\n", mainBuf);
+		//		kill(getpid(), SIGSEGV);
 	}
 }
 

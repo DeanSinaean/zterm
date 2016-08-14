@@ -23,7 +23,8 @@
 #include "ZModemFileList.h"
 
 // macros
-#define ALLOK (GetLastError()==NO_ERROR)
+#define ALLOK (GetLastError()==0)
+//#define ALLOK true
 #define needsDLE(x) (((x) == ZDLE) || ((x) == 0x10) || ((x) == 0x11) || ((x) == 0x13)) //masking special ZModem chars
 
 // states of the zmodem state machine
@@ -65,7 +66,7 @@ class CZModemCore
 {
 public:
 	//construction, destruction
-	CZModemCore(HWND howner,HANDLE hcomm,HANDLE hcancelevent);
+	CZModemCore(HWND howner,int ufd,HANDLE hcancelevent);
 	virtual ~CZModemCore();
 	//actions
 	bool Send(Filelist* filelist);
@@ -126,7 +127,7 @@ protected:
 	unsigned char headerType;
 	int headerData[4];
 	int moreData;
-	char mainBuf[1024];
+	char mainBuf[1024+5];//data + ZCRCG + 4byteCRC
 	char* bufPos;
 	char* bufTop;
 	uint64_t goodOffset;
@@ -136,7 +137,7 @@ protected:
 	int maxTx;
 	//
 	HWND m_hOwner;
-	HANDLE m_hcomm;
+	int m_ufd;
 	HANDLE m_hCancelEvent;
 	CZModemComm* m_ZModemComm;
 	CZModemFile* m_ZModemFile;

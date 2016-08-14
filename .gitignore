@@ -1,0 +1,5 @@
+*.out
+*.so
+log
+main
+api.h

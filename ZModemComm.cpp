@@ -13,17 +13,23 @@
 #include "ZModemCore.h"
 #include "type.h"
 
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <stdlib.h>
 #ifdef _DEBUG
 #undef THIS_FILE
 static char THIS_FILE[]=__FILE__;
 #define new DEBUG_NEW
 #endif
+int error;
 
 //-----------------------------------------------------------------------------
-CZModemComm::CZModemComm(HANDLE hcomm,HANDLE hCancelEvent)
+CZModemComm::CZModemComm(int ufd,HANDLE hCancelEvent)
 //-----------------------------------------------------------------------------
 {
-	m_hcomm = hcomm;
+	m_ufd= ufd;
 	m_hCancelEvent = hCancelEvent;
 }
 
@@ -35,46 +41,54 @@ CZModemComm::~CZModemComm()
 }
 
 //-----------------------------------------------------------------------------
-DWORD CZModemComm::ReadBuffer(void *buffer, DWORD num)
-//-----------------------------------------------------------------------------
-{	//Variablen
-	return(0);
-}
-
-//-----------------------------------------------------------------------------
-DWORD CZModemComm::WriteBuffer(const void *buffer, DWORD num)
-//-----------------------------------------------------------------------------
-{
-
-	return(0);
-}
-
-//-----------------------------------------------------------------------------
 void CZModemComm::GetBlock(void *buffer,int max,int * actual)
 //-----------------------------------------------------------------------------
 {	//Variablen
+	
+	do{
+		*actual = read(m_ufd, buffer, max);
+	} while(*actual<=0);
 }
 
 //-----------------------------------------------------------------------------
 void CZModemComm::GetBlockImm(void *buffer,int max,int * actual)
 //-----------------------------------------------------------------------------
 {	
-	int x;
-	
-	x= ReadBuffer(buffer,max);
-	if(x==0)
-	{
-		TRACE("set error %s\n","ZMODEM_TIMEOUT");
+	*actual = read(m_ufd, buffer, max);
+	if(*actual<=0) {
 		SetLastError(ZMODEM_TIMEOUT);
 	}
-	*actual=x;
 }
 
 //-----------------------------------------------------------------------------
 int CZModemComm::WriteBlock(const void* buf,int max)
 //-----------------------------------------------------------------------------
 {
-	return WriteBuffer(buf,max);
+	/*
+	printf("ufd:%d %s-->", m_ufd, __func__);
+	int i=0;
+	for(i=0;i<max;i++) {
+		printf("%x ", *((char* )buf+i));
+	}
+	printf("\n");
+	printf("ufd:%d %s---->", m_ufd, __func__);
+	for(i=0;i<max;i++) {
+		printf("%c", *((char* )buf+i));
+	}
+	printf("\n");
+	*/
+	int written = 0;
+	while(written != max) {
+	    int ret = write(m_ufd, buf + written,max-written);
+		if (ret <=0) {
+			continue;
+		}else{
+			written += ret;
+		}
+	}
+	return 0;
+
+	return write(m_ufd, buf,max);
 }
 
 //-----------------------------------------------------------------------------
