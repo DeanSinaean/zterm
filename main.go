@@ -3,7 +3,7 @@ package main
 /*
 	#include <termios.h>
 	#include <malloc.h>
-	#cgo LDFLAGS: -L./ -lzmodem
+	#cgo LDFLAGS: -L./zmodem -lzmodem
 	void zmodem_sendfile( char *filename) ;
 	void setTermios(struct termios *pNewtio, unsigned short uBaudRate);
 	int init(void);
@@ -19,28 +19,42 @@ import (
 	"os"
 	"time"
 	"unsafe"
+
+	"github.com/andlabs/ui"
 )
 
 var stop bool
+
+var w *ui.Window
 
 func init() {
 	stop = false
 }
 func main() {
-	var ret C.int = C.init()
-	if ret < 0 {
-		return
-	}
-
-	go printing()
-	inputing()
+	ui.Main(func() {
+		var ret C.int = C.init()
+		if ret < 0 {
+			return
+		}
+		go printing()
+		go inputing()
+		//ui setup
+		w = ui.NewWindow("qterm", 640, 480, false)
+		w.OnClosing(func(*ui.Window) bool {
+			ui.Quit()
+			return true
+		})
+		w.Show()
+	})
 
 }
+
 func parseCmd(cmd string) bool {
 	switch cmd {
 	case "rz":
 		stop = true
-		var s = "/home/dean/test.jpg"
+		//		var s = "/home/dean/test.jpg"
+		var s = ui.OpenFile(w)
 		var c *C.char = C.CString(s)
 		C.zmodem_sendfile(c)
 		stop = false
@@ -110,7 +124,7 @@ func printing() {
 			if len(dat) == 21 {
 				fmt.Print(dat)
 				dat = dat[0:0]
-				var s = "/home/dean"
+				var s = ui.SaveFile(nil)
 				var bs = []byte(s)
 				C.zmodem_recvfile((*C.char)(unsafe.Pointer(&bs[0])))
 				stop = false
