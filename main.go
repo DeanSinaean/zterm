@@ -3,13 +3,52 @@ package main
 /*
 	#include <termios.h>
 	#include <malloc.h>
+	#include <vte/vte.h>
+	#include <gtk/gtk.h>
 	#cgo LDFLAGS: -L./zmodem -lzmodem
+	#cgo pkg-config:vte
 	void zmodem_sendfile( char *filename) ;
 	void setTermios(struct termios *pNewtio, unsigned short uBaudRate);
 	int init(void);
 	int read_uart(char ** buf_p, int len);
 	int write_uart(char *buf, int len);
 	void zmodem_recvfile( char *dir);
+	GtkWidget * vte;
+	GtkWidget * main_window;
+	extern void InputCallback(void * data, int length);
+	static void got_input(VteTerminal * widget, gchar * text, guint length, gpointer ptr) {
+        InputCallback((void *)text, length);
+	}
+	static inline int ui_main()
+	{
+		int argc=0;
+		char **argv = NULL;
+		gtk_init(&argc, &argv);
+		main_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+		vte = vte_terminal_new();
+		gtk_widget_show(vte);
+		gtk_container_add(GTK_CONTAINER(main_window),vte);
+		gtk_widget_show(main_window);
+		g_signal_connect_after(GTK_OBJECT(vte),"commit", G_CALLBACK(got_input),NULL);
+		gtk_main();
+		return 0;
+	}
+	static inline void feed(char * data, int length) {
+		vte_terminal_feed(VTE_TERMINAL(vte), data, length);
+	}
+	static inline char * FileOpen() {
+		char * filename = NULL;
+		GtkWidget * dialog = gtk_file_chooser_dialog_new("Open File",main_window,
+			GTK_FILE_CHOOSER_ACTION_OPEN,
+			GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+			GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
+			NULL);
+		if(gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_ACCEPT) {
+			filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
+		}
+		gtk_widget_destroy(dialog);
+		return filename;
+	}
 */
 import "C"
 
@@ -19,42 +58,34 @@ import (
 	"os"
 	"time"
 	"unsafe"
-
-	"github.com/andlabs/ui"
 )
 
 var stop bool
-
-var w *ui.Window
 
 func init() {
 	stop = false
 }
 func main() {
-	ui.Main(func() {
-		var ret C.int = C.init()
-		if ret < 0 {
-			return
-		}
-		go printing()
-		go inputing()
-		//ui setup
-		w = ui.NewWindow("qterm", 640, 480, false)
-		w.OnClosing(func(*ui.Window) bool {
-			ui.Quit()
-			return true
-		})
-		w.Show()
-	})
-
+	var ret C.int = C.init()
+	if ret < 0 {
+		return
+	}
+	go printing()
+	go inputing()
+	C.ui_main()
 }
 
 func parseCmd(cmd string) bool {
 	switch cmd {
 	case "rz":
 		stop = true
-		//		var s = "/home/dean/test.jpg"
-		var s = ui.OpenFile(w)
+		var filename *C.char = C.FileOpen()
+		if filename == nil {
+			C.free(filename)
+			return false
+		}
+		var s = C.GoString(filename)
+		C.free(filename)
 		var c *C.char = C.CString(s)
 		C.zmodem_sendfile(c)
 		stop = false
@@ -62,6 +93,24 @@ func parseCmd(cmd string) bool {
 		return true
 	}
 	return false
+}
+
+var line []byte
+var lineb []byte
+var i C.int
+
+//export InputCallback
+func InputCallback(data unsafe.Pointer, length C.int) {
+	lineb = C.GoBytes(data, length)
+	for i = 0; i < length; i++ {
+		line = append(line, lineb[i])
+	}
+	C.write_uart(C.CString(string(lineb)), (C.int)(len(lineb)))
+	if lineb[length-1] == 0x0d {
+		parseCmd(string(line))
+		line = line[0:0]
+	}
+	return
 }
 func inputing() {
 	reader := bufio.NewReader(os.Stdin)
@@ -124,7 +173,8 @@ func printing() {
 			if len(dat) == 21 {
 				fmt.Print(dat)
 				dat = dat[0:0]
-				var s = ui.SaveFile(nil)
+				//	var s = ui.SaveFile(nil)
+				var s = "ada"
 				var bs = []byte(s)
 				C.zmodem_recvfile((*C.char)(unsafe.Pointer(&bs[0])))
 				stop = false
@@ -135,6 +185,8 @@ func printing() {
 			}
 		}
 		fmt.Print(string(dati))
+
+		C.feed((*C.char)(unsafe.Pointer(&dati[0])), 1)
 		if dati[0] != '\n' {
 			continue
 		}
