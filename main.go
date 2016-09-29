@@ -58,6 +58,8 @@ import (
 	"os"
 	"time"
 	"unsafe"
+
+	"log"
 )
 
 var stop bool
@@ -66,6 +68,13 @@ func init() {
 	stop = false
 }
 func main() {
+	file, err := os.Open("~/.zterm.log")
+	if(err!=nil){
+		fmt.Println("Failed to open log file, logging to stdout.")
+		log.SetOutput(os.Stdout)
+	}else{
+		log.SetOutput(os.o)
+	}
 	var ret = C.init()
 	if ret < 0 {
 		return
@@ -166,8 +175,7 @@ func printing() {
 		dati := []byte(string(s))
 		dat = append(dat, dati[0])
 		if len(dat) == 3 && dat[0] == 'r' && dat[1] == 'z' && dat[2] == '\r' {
-			fmt.Println("zmodem sz")
-			fmt.Println("ok to send zrinit")
+			log.Debug("rz command sent")
 			dat = dat[0:0]
 			state = wait_z
 			continue
