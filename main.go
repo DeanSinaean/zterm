@@ -66,11 +66,11 @@ func init() {
 	stop = false
 }
 func main() {
-	var ret C.int = C.init()
+	var ret = C.init()
 	if ret < 0 {
 		return
 	}
-	go printing()
+	//go printing()
 	go inputing()
 	C.ui_main()
 }
@@ -79,14 +79,14 @@ func parseCmd(cmd string) bool {
 	switch cmd {
 	case "rz":
 		stop = true
-		var filename *C.char = C.FileOpen()
+		var filename = C.FileOpen()
 		if filename == nil {
 			C.free(filename)
 			return false
 		}
 		var s = C.GoString(filename)
 		C.free(filename)
-		var c *C.char = C.CString(s)
+		var c = C.CString(s)
 		C.zmodem_sendfile(c)
 		stop = false
 		//C.free(c)
@@ -112,6 +112,8 @@ func InputCallback(data unsafe.Pointer, length C.int) {
 	}
 	return
 }
+
+/*
 func inputing() {
 	reader := bufio.NewReader(os.Stdin)
 	//var bytes =make([]byte, 1)
@@ -139,6 +141,7 @@ func inputing() {
 		*/
 	}
 }
+*/
 
 const (
 	NORMAL = 0
@@ -163,8 +166,8 @@ func printing() {
 		dati := []byte(string(s))
 		dat = append(dat, dati[0])
 		if len(dat) == 3 && dat[0] == 'r' && dat[1] == 'z' && dat[2] == '\r' {
-			fmt.Println("zmodem sz\n")
-			fmt.Println("ok to send zrinit\n")
+			fmt.Println("zmodem sz")
+			fmt.Println("ok to send zrinit")
 			dat = dat[0:0]
 			state = wait_z
 			continue
